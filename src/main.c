@@ -55,9 +55,6 @@ void f10_controller_process(intersection_t* intersection, pipe_pair_t* pipes) {
     fflush(stdout);
     
     while (!global_shutdown_flag) {
-        /* Update traffic lights */
-        intersection_update_lights(intersection);
-        
         /* Check for emergency messages from F11 */
         ipc_message_t msg;
         memset(&msg, 0, sizeof(ipc_message_t));
@@ -90,9 +87,6 @@ void f11_controller_process(intersection_t* intersection, pipe_pair_t* pipes) {
     fflush(stdout);
     
     while (!global_shutdown_flag) {
-        /* Update traffic lights */
-        intersection_update_lights(intersection);
-        
         /* Check for emergency messages from F10 */
         ipc_message_t msg;
         memset(&msg, 0, sizeof(ipc_message_t));
@@ -384,8 +378,8 @@ int main(int argc, char* argv[]) {
 
     /* Create intersections */
     printf("[MAIN] Creating intersections F10 and F11...\n");
-    global_simulation->f10_intersection = intersection_create(0, 20000, 10000);
-    global_simulation->f11_intersection = intersection_create(1, 20000, 10000);
+    global_simulation->f10_intersection = intersection_create(0, 12000, 5000);
+    global_simulation->f11_intersection = intersection_create(1, 12000, 5000);
     
     if (!global_simulation->f10_intersection || !global_simulation->f11_intersection) {
         printf("Failed to create intersections\n");
@@ -466,6 +460,11 @@ int main(int argc, char* argv[]) {
     while (!global_shutdown_flag) {
         dashboard_cycles++;
 
+        /* Update traffic lights in parent process - controllers can't do this
+           correctly because fork() gives them a separate copy of the memory */
+        intersection_update_lights(global_simulation->f10_intersection);
+        intersection_update_lights(global_simulation->f11_intersection);
+
         /* Check if all vehicles are finished */
         int active_vehicles = 0;
         for (int i = 0; i < MAX_VEHICLES; i++) {
@@ -508,6 +507,8 @@ int main(int argc, char* argv[]) {
         } else {
             graphics_set_status("All vehicles done — waiting to confirm shutdown...", 15);
         }
+
+        wait_cycles++;  /* Always increment so completion check works */
         
         /* If no active vehicles for 10 cycles (5 seconds) AND at least 30 cycles (15 seconds) have passed, auto-shutdown */
         if (active_vehicles == 0 && wait_cycles >= 30) {

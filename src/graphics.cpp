@@ -153,22 +153,26 @@ static void drawParking(sf::RenderWindow& win, sf::Font& font,
 /* ── IPC pipe with animation ── */
 static void drawIPC(sf::RenderWindow& win, sf::Font& font,
                     float x, float y, float w, const IpcFlash& flash) {
-    win.draw(rect(x, y, w, 50, PANEL, BORDER, 1));
-    text(win, font, "IPC PIPE  F10 <──────────────────> F11", x+8, y+6, 10, DIM_C);
+    win.draw(rect(x, y, w, 56, PANEL, BORDER, 1));
+    text(win, font, "IPC PIPES", x+8, y+4, 10, CYAN_C);
 
     bool active = flash.timer > 0.f;
-    sf::Color lineCol = active ? (flash.direction == 0 ? CYAN_C : YELLOW_C) : DIM_C;
-    std::string arrow = active
-        ? (flash.direction == 0 ? "F10 ══════════════[MSG]══════════════> F11"
-                                 : "F10 <══════════════[MSG]══════════════ F11")
-        : "F10 ─────────────────────────────────── F11";
+    bool f10_to_f11 = active && flash.direction == 0;
+    bool f11_to_f10 = active && flash.direction == 1;
 
-    text(win, font, arrow, x+8, y+24, 10, lineCol);
+    /* Row 1: F10 -> F11 */
+    sf::Color col1 = f10_to_f11 ? CYAN_C : DIM_C;
+    std::string row1 = f10_to_f11
+        ? "F10 ==[EMERGENCY]=================================> F11"
+        : "F10 ---------------------------------------------> F11";
+    text(win, font, row1, x+8, y+20, 9, col1);
 
-    if (active) {
-        std::string dir = flash.direction == 0 ? "Emergency alert F10→F11" : "Emergency alert F11→F10";
-        text(win, font, dir, x+8, y+36, 9, lineCol);
-    }
+    /* Row 2: F11 -> F10 */
+    sf::Color col2 = f11_to_f10 ? YELLOW_C : DIM_C;
+    std::string row2 = f11_to_f10
+        ? "F10 <=================================[EMERGENCY]== F11"
+        : "F10 <--------------------------------------------- F11";
+    text(win, font, row2, x+8, y+38, 9, col2);
 }
 
 /* ── Event log ── */

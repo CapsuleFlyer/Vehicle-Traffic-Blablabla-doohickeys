@@ -173,29 +173,19 @@ void* vehicle_thread_func(void* arg) {
     /* ===== PRIORITY-BASED WAIT TIME ===== */
     if (is_emergency) {
         fprintf(stderr, "[%s #%d] EMERGENCY VEHICLE - NO WAIT\n", vehicle->type, vehicle->id);
-        for (int _s = 0; _s < 5 && !global_shutdown_flag; _s++)
-            usleep(1000 / 5);
-        if (global_shutdown_flag) {
-            vehicle->is_active = 0;
-            pthread_exit(NULL);
-        }
+        usleep(100000);  /* 100ms brief pause before acting */
+        if (global_shutdown_flag) { vehicle->is_active = 0; pthread_exit(NULL); }
     } else if (is_medium) {
-        fprintf(stderr, "[Bus #%d] Medium priority - reduced wait time (0.1 sec)\n", vehicle->id);
+        fprintf(stderr, "[Bus #%d] Medium priority - reduced wait time (0.5 sec)\n", vehicle->id);
         for (int _s = 0; _s < 5 && !global_shutdown_flag; _s++)
-            usleep(50000 / 5);
-        if (global_shutdown_flag) {
-            vehicle->is_active = 0;
-            pthread_exit(NULL);
-        }
+            usleep(100000);  /* 500ms total */
+        if (global_shutdown_flag) { vehicle->is_active = 0; pthread_exit(NULL); }
     } else {
-        fprintf(stderr, "[%s #%d] Normal priority - standard wait time (0.3 sec)\n", 
+        fprintf(stderr, "[%s #%d] Normal priority - standard wait time (1 sec)\n",
                 vehicle->type, vehicle->id);
-        for (int _s = 0; _s < 5 && !global_shutdown_flag; _s++)
-            usleep(50000 / 5);
-        if (global_shutdown_flag) {
-            vehicle->is_active = 0;
-            pthread_exit(NULL);
-        }
+        for (int _s = 0; _s < 10 && !global_shutdown_flag; _s++)
+            usleep(100000);  /* 1 second total */
+        if (global_shutdown_flag) { vehicle->is_active = 0; pthread_exit(NULL); }
     }
     CHECK_SHUTDOWN_AND_EXIT();
 
@@ -385,23 +375,18 @@ void* vehicle_thread_func(void* arg) {
         my_light = &intersection->west_light;
     }
     
-    /* Wait for light to turn GREEN - max timeout 5 seconds (50 iterations * 100ms) */
+    /* Wait for light to turn GREEN - max timeout 15 seconds (30 iterations * 500ms) */
     int light_wait_iters = 0;
-    while (!global_shutdown_flag && light_wait_iters < 50 && my_light) {
+    while (!global_shutdown_flag && light_wait_iters < 30 && my_light) {
         if (my_light->state == LIGHT_GREEN) {
             fprintf(stderr, "[%s #%d] Light GREEN - proceeding to cross\n",
                     vehicle->type, vehicle->id);
-            break;  /* Light is green, proceed to crossing */
+            break;
         }
-        
         fprintf(stderr, "[%s #%d] Waiting - %s light is RED\n",
                 vehicle->type, vehicle->id, vehicle->origin);
-        for (int _s = 0; _s < 5 && !global_shutdown_flag; _s++)
-            usleep(200000 / 5);  /* Sleep 200ms and retry */
-        if (global_shutdown_flag) {
-            vehicle->is_active = 0;
-            pthread_exit(NULL);
-        }
+        usleep(500000);  /* 500ms per check */
+        if (global_shutdown_flag) { vehicle->is_active = 0; pthread_exit(NULL); }
         light_wait_iters++;
     }
     CHECK_SHUTDOWN_AND_EXIT();
@@ -428,15 +413,11 @@ void* vehicle_thread_func(void* arg) {
                         vehicle->origin, "Intersection", vehicle->priority, "CROSSING");
     graphics_log_event(vehicle->type, "CROSSING", vehicle->intersection_id, vehicle->id);
     
-    /* SLEEP FOR CROSSING TIME IN 100MS CHUNKS */
-    int cross_chunks = 2 + (rand() % 5);  /* 2-6 chunks = 200-600ms */
+    /* SLEEP FOR CROSSING TIME IN 500MS CHUNKS */
+    int cross_chunks = 3 + (rand() % 4);  /* 3-6 chunks = 1.5-3 seconds */
     for (int c = 0; c < cross_chunks; c++) {
-        for (int _s = 0; _s < 5 && !global_shutdown_flag; _s++)
-            usleep(100000 / 5);
-        if (global_shutdown_flag) {
-            vehicle->is_active = 0;
-            pthread_exit(NULL);
-        }
+        usleep(500000);
+        if (global_shutdown_flag) { vehicle->is_active = 0; pthread_exit(NULL); }
     }
     CHECK_SHUTDOWN_AND_EXIT();
     
