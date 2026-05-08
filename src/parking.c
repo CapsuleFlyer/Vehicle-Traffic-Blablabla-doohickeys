@@ -34,6 +34,7 @@ parking_lot_t* parking_create(void) {
 
     pthread_mutex_init(&lot->lock, NULL);
     lot->current_occupancy = 0;
+    lot->peak_occupancy = 0;
     lot->total_parked_vehicles = 0;
 
     return lot;
@@ -76,6 +77,8 @@ int parking_wait_spot(parking_lot_t* lot) {
             pthread_mutex_lock(&lot->lock);
             lot->current_occupancy++;
             lot->total_parked_vehicles++;
+            if (lot->current_occupancy > lot->peak_occupancy)
+                lot->peak_occupancy = lot->current_occupancy;
             pthread_mutex_unlock(&lot->lock);
             return 0;
         }
@@ -143,6 +146,17 @@ int parking_get_occupancy(parking_lot_t* lot) {
     pthread_mutex_unlock(&lot->lock);
     
     return occupancy;
+}
+
+/*
+ * Get peak occupancy ever reached
+ */
+int parking_get_peak(parking_lot_t* lot) {
+    if (!lot) return 0;
+    pthread_mutex_lock(&lot->lock);
+    int peak = lot->peak_occupancy;
+    pthread_mutex_unlock(&lot->lock);
+    return peak;
 }
 
 /*

@@ -289,6 +289,10 @@ void* vehicle_thread_func(void* arg) {
                 print_vehicle_status(vehicle->arrival_time, vehicle->type, vehicle->id,
                                     vehicle->origin, "Parking", vehicle->priority, "PARKED");
                 graphics_log_event(vehicle->type, "PARKED", vehicle->intersection_id, vehicle->id);
+                graphics_update_parking(
+                    parking_get_occupancy(global_simulation->f10_intersection->parking_lot),
+                    parking_get_occupancy(global_simulation->f11_intersection->parking_lot)
+                );
                 
                 /* SLEEP - SIMULATE PARKING DURATION (with shutdown checks) */
                 int park_chunks = 5 + (rand() % 11);  /* 5-15 chunks = 0.5-1.5s */
@@ -312,7 +316,10 @@ void* vehicle_thread_func(void* arg) {
                 /* LEAVE PARKING SPOT AND QUEUE */
                 parking_leave_spot(intersection->parking_lot);
                 parking_leave_queue(intersection->parking_lot);
-                
+                graphics_update_parking(
+                    parking_get_occupancy(global_simulation->f10_intersection->parking_lot),
+                    parking_get_occupancy(global_simulation->f11_intersection->parking_lot)
+                );
                 fprintf(stderr, "[%s #%d] Left parking spot at F%d\n",
                         vehicle->type, vehicle->id, 10 + vehicle->intersection_id);
             } else {

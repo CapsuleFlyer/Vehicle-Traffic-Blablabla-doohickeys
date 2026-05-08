@@ -314,9 +314,9 @@ void shutdown_simulation(void) {
     graphics_show_final(MAX_VEHICLES, global_simulation->total_parked_vehicles,
                         emergency_count, bus_count, car_count, bike_count, tractor_count,
                         global_simulation->f10_intersection ?
-                            parking_get_occupancy(global_simulation->f10_intersection->parking_lot) : 0,
+                            parking_get_peak(global_simulation->f10_intersection->parking_lot) : 0,
                         global_simulation->f11_intersection ?
-                            parking_get_occupancy(global_simulation->f11_intersection->parking_lot) : 0);
+                            parking_get_peak(global_simulation->f11_intersection->parking_lot) : 0);
 
     /* Shutdown SFML graphics window */
     graphics_shutdown();
@@ -452,10 +452,10 @@ int main(int argc, char* argv[]) {
     printf("[MAIN] Simulation running. Press Ctrl+C to stop.\n\n");
     fflush(stdout);
     
-    int idle_count = 0;  /* Count cycles with no active vehicles */
+    int idle_count = 0;
     int last_active = MAX_VEHICLES;
-    int wait_cycles = 0;  /* Wait at least 20 cycles (10 seconds) before checking for completion */
-    int dashboard_cycles = 0;  /* Display dashboard periodically */
+    int wait_cycles = 0;
+    int dashboard_cycles = 0;
     
     while (!global_shutdown_flag) {
         dashboard_cycles++;

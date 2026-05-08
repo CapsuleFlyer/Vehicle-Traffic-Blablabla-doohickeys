@@ -9,9 +9,10 @@
 
 /* Parking lot structure */
 typedef struct {
-    sem_t parking_spots;      /* Semaphore: max 10 cars */
-    sem_t waiting_queue;      /* Semaphore: bounded waiting queue, max 5 */
+    sem_t parking_spots;
+    sem_t waiting_queue;
     int current_occupancy;
+    int peak_occupancy;
     int total_parked_vehicles;
     pthread_mutex_t lock;
 } parking_lot_t;
@@ -25,5 +26,6 @@ void parking_leave_queue(parking_lot_t* lot);
 void parking_leave_spot(parking_lot_t* lot);
 int parking_get_occupancy(parking_lot_t* lot);
 int parking_get_total_parked(parking_lot_t* lot);
+int parking_get_peak(parking_lot_t* lot);
 
 #endif /* PARKING_H */

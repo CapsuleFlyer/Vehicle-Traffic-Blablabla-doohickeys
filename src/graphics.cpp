@@ -30,8 +30,8 @@ struct FinalStats {
     int car_count;
     int bike_count;
     int tractor_count;
-    int f10_occupancy;
-    int f11_occupancy;
+    int f10_peak_occupancy;
+    int f11_peak_occupancy;
 };
 
 struct SharedState {
@@ -221,18 +221,20 @@ static void drawFinalScreen(sf::RenderWindow& win, sf::Font& font, const FinalSt
     text(win, font, "Bikes:                 " + std::to_string(fs.bike_count),     col1, y, 11, CYAN_C);  y+=18;
     text(win, font, "Tractors:              " + std::to_string(fs.tractor_count),  col1, y, 11, ORANGE_C);
 
-    /* Parking final state */
+    /* Peak parking state */
     y = 70;
     win.draw(rect(col2-10, y-8, 360, 90, PANEL, BORDER, 1));
-    text(win, font, "FINAL PARKING STATE", col2, y, 13, YELLOW_C); y+=22;
-    text(win, font, "F10 Parking:", col2, y, 11, WHITE_C);
+    text(win, font, "PEAK PARKING STATE", col2, y, 13, YELLOW_C); y+=22;
+    text(win, font, "F10 Peak:", col2, y, 11, WHITE_C);
+    text(win, font, std::to_string(fs.f10_peak_occupancy) + "/10", col2+80, y, 11, GREEN_C);
     float sw = 18.f;
     for (int i = 0; i < 10; i++)
-        win.draw(rect(col2+110+i*sw, y+2, sw-2, 12, i < fs.f10_occupancy ? GREEN_C : sf::Color(35,42,62)));
+        win.draw(rect(col2+110+i*sw, y+2, sw-2, 12, i < fs.f10_peak_occupancy ? GREEN_C : sf::Color(35,42,62)));
     y+=20;
-    text(win, font, "F11 Parking:", col2, y, 11, WHITE_C);
+    text(win, font, "F11 Peak:", col2, y, 11, WHITE_C);
+    text(win, font, std::to_string(fs.f11_peak_occupancy) + "/10", col2+80, y, 11, GREEN_C);
     for (int i = 0; i < 10; i++)
-        win.draw(rect(col2+110+i*sw, y+2, sw-2, 12, i < fs.f11_occupancy ? GREEN_C : sf::Color(35,42,62)));
+        win.draw(rect(col2+110+i*sw, y+2, sw-2, 12, i < fs.f11_peak_occupancy ? GREEN_C : sf::Color(35,42,62)));
 
     /* OS Concepts */
     y = 290;
@@ -442,6 +444,13 @@ void graphics_log_event(const char* vehicle_type, const char* status,
     pthread_mutex_unlock(&g_state.lock);
 }
 
+void graphics_update_parking(int f10_occupancy, int f11_occupancy) {
+    pthread_mutex_lock(&g_state.lock);
+    g_state.f10_occupancy = f10_occupancy;
+    g_state.f11_occupancy = f11_occupancy;
+    pthread_mutex_unlock(&g_state.lock);
+}
+
 void graphics_update_state(
     int f10_crossing, int f10_occupancy,
     int f11_crossing, int f11_occupancy,
@@ -476,18 +485,18 @@ void graphics_set_status(const char* msg, int spawned_count) {
 void graphics_show_final(int total_vehicles, int total_parked,
                          int emergency_count, int bus_count,
                          int car_count, int bike_count, int tractor_count,
-                         int f10_occupancy, int f11_occupancy) {
+                         int f10_peak_occupancy, int f11_peak_occupancy) {
     pthread_mutex_lock(&g_state.lock);
-    g_state.final_stats.ready          = true;
-    g_state.final_stats.total_vehicles = total_vehicles;
-    g_state.final_stats.total_parked   = total_parked;
-    g_state.final_stats.emergency_count= emergency_count;
-    g_state.final_stats.bus_count      = bus_count;
-    g_state.final_stats.car_count      = car_count;
-    g_state.final_stats.bike_count     = bike_count;
-    g_state.final_stats.tractor_count  = tractor_count;
-    g_state.final_stats.f10_occupancy  = f10_occupancy;
-    g_state.final_stats.f11_occupancy  = f11_occupancy;
+    g_state.final_stats.ready           = true;
+    g_state.final_stats.total_vehicles  = total_vehicles;
+    g_state.final_stats.total_parked    = total_parked;
+    g_state.final_stats.emergency_count = emergency_count;
+    g_state.final_stats.bus_count       = bus_count;
+    g_state.final_stats.car_count       = car_count;
+    g_state.final_stats.bike_count      = bike_count;
+    g_state.final_stats.tractor_count   = tractor_count;
+    g_state.final_stats.f10_peak_occupancy = f10_peak_occupancy;
+    g_state.final_stats.f11_peak_occupancy = f11_peak_occupancy;
     pthread_mutex_unlock(&g_state.lock);
 }
 
