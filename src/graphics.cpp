@@ -239,7 +239,7 @@ static void drawFinalScreen(sf::RenderWindow& win, sf::Font& font, const FinalSt
     /* OS Concepts */
     y = 290;
     win.draw(rect(col2-10, y-8, 360, 130, PANEL, BORDER, 1));
-    text(win, font, "OS CONCEPTS DEMONSTRATED", col2, y, 12, CYAN_C); y+=22;
+    text(win, font, "PROGRAM ATTRIBUTES CHECK", col2, y, 12, CYAN_C); y+=22;
     text(win, font, "✓ Threads (pthreads) - 15 vehicles", col2, y, 10, GREEN_C); y+=16;
     text(win, font, "✓ Processes (fork) - F10/F11 controllers", col2, y, 10, GREEN_C); y+=16;
     text(win, font, "✓ IPC (pipes) - emergency coordination", col2, y, 10, GREEN_C); y+=16;

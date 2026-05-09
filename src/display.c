@@ -12,12 +12,6 @@
 #include <unistd.h>
 #include <semaphore.h>
 
-/* 
- * DISPLAY ARCHITECTURE: Option A (printf-based)
- * Uses printf/fprintf for all output to avoid conflicts with ncurses.
- * Terminal is cleared with ANSI escape sequences, not ncurses.
- * This keeps the code simple and portable across platforms.
- */
 
 /* Event log storage - circular buffer */
 #define EVENT_LOG_SIZE 100
@@ -31,18 +25,15 @@ static event_log_t event_log = {0};
 static pthread_mutex_t log_lock = PTHREAD_MUTEX_INITIALIZER;
 
 void display_init(void) {
-    /* Option A: Simple printf-based display - no ncurses initialization */
     memset(&event_log, 0, sizeof(event_log));
 }
 
 void display_shutdown(void) {
-    /* Option A: Simple printf-based display - no ncurses shutdown needed */
     fflush(stdout);
     fflush(stderr);
 }
 
 void display_clear_screen(void) {
-    /* Option A: Use ANSI escape sequences to clear terminal */
     /* \033[2J clears entire screen, \033[H moves cursor to home */
     printf("\033[2J\033[H");
     fflush(stdout);
@@ -67,7 +58,7 @@ static void add_event(const char* message) {
     pthread_mutex_unlock(&log_lock);
 }
 
-/* Print perfectly aligned dashboard - 62 chars wide */
+/* Print aligned dashboard*/
 void display_draw_live_dashboard(intersection_t* f10, intersection_t* f11) {
     /* Simplified display - removed visual blocks, keeping logic intact */
     (void)f10;
@@ -79,7 +70,6 @@ void display_draw_traffic_light(int row, int col, int is_green, const char* dire
     (void)col;
     (void)is_green;
     (void)direction;
-    /* Removed visual rendering - logic in background */
 }
 
 void display_draw_parking_lot(int row, int col, int occupancy, int max_spots) {
@@ -87,7 +77,6 @@ void display_draw_parking_lot(int row, int col, int occupancy, int max_spots) {
     (void)col;
     (void)occupancy;
     (void)max_spots;
-    /* Removed visual rendering - logic in background */
 }
 
 /* Print ASCII intersection map with parking */
@@ -121,7 +110,6 @@ void display_print_vehicle_table(int row, vehicle_t** vehicles, int vehicle_coun
 
 void display_update_live_ui(intersection_t* f10, intersection_t* f11, 
                             vehicle_t** vehicles, int vehicle_count) {
-    /* Simplified display - removed visual dashboard blocks */
     (void)f10;
     (void)f11;
     (void)vehicles;
@@ -211,7 +199,6 @@ void print_emergency_alert(const char* vehicle_type, const char* from, const cha
 
 /* Print live dashboard */
 void print_live_dashboard(void) {
-    /* Removed visual dashboard - logic in background */
 }
 
 /* Print detailed shutdown summary */
@@ -238,7 +225,7 @@ void print_shutdown_summary_detailed(int total_vehicles, int total_parked,
     printf("║   Semaphores Destroyed:  %s%2d%s                                               ║\n",YELLOW, semaphores_destroyed, GREEN);
     printf("║   Pipes Closed:          %s%2d%s                                               ║\n",YELLOW, pipes_closed, GREEN);
     printf("║                                                                                ║\n");
-    printf("║ Simulation terminated gracefully by Ctrl+C (SIGINT)                            ║\n");
+    printf("║ Simulation terminated gracefully                                               ║\n");
     printf("╚════════════════════════════════════════════════════════════════════════════════╝%s\n\n",
            RESET);
     fflush(stdout);

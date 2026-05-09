@@ -43,7 +43,7 @@ void setup_signal_handlers(void) {
     struct sigaction sa;
     memset(&sa, 0, sizeof(sa));
     sa.sa_handler = signal_handler;
-    sa.sa_flags = SA_RESTART;  /* CRITICAL: Restart interrupted system calls */
+    sa.sa_flags = SA_RESTART;  /* Restart interrupted system calls */
     sigaction(SIGINT, &sa, NULL);
 }
 
@@ -154,7 +154,6 @@ void spawn_vehicle_threads(simulation_t* sim) {
     for (int spawn_order = 0; spawn_order < MAX_VEHICLES && !global_shutdown_flag; spawn_order++) {
         int i = indices[spawn_order];
         
-        /* FIXED: Use spawn_order for F10/F11 balance, not shuffled index */
         int intersection_id = spawn_order % 2;
         
         /* CRITICAL: Bounds check to prevent array overrun */
@@ -220,7 +219,7 @@ void shutdown_simulation(void) {
         }
     }
     
-    /* BUG FIX #1: COUNT VEHICLE TYPES PER SECTOR - before destroying vehicles */
+    /* COUNT VEHICLE TYPES PER SECTOR - before destroying vehicles */
     int f10_ambulance = 0, f10_firetruck = 0, f10_bus = 0, f10_car = 0, f10_bike = 0, f10_tractor = 0;
     int f11_ambulance = 0, f11_firetruck = 0, f11_bus = 0, f11_car = 0, f11_bike = 0, f11_tractor = 0;
     
@@ -275,7 +274,7 @@ void shutdown_simulation(void) {
         waitpid(global_simulation->f11_controller_pid, NULL, 0);
     }
 
-    /* BUG FIX #2: GET SEMAPHORE VALUES BEFORE DESTROYING INTERSECTIONS */
+    /* GET SEMAPHORE VALUES BEFORE DESTROYING INTERSECTIONS */
     int f10_spots = 0, f10_queue = 0, f11_spots = 0, f11_queue = 0;
     if (global_simulation->f10_intersection && global_simulation->f10_intersection->parking_lot) {
         sem_getvalue(&global_simulation->f10_intersection->parking_lot->parking_spots, &f10_spots);
@@ -325,7 +324,7 @@ void shutdown_simulation(void) {
     fprintf(stderr, "[MAIN] Freeing simulation memory...\n");
     fflush(stderr);
     
-    /* BUG #3: Destroy the parked_count_lock mutex */
+    /* Destroy the parked_count_lock mutex */
     pthread_mutex_destroy(&global_simulation->parked_count_lock);
     
     free(global_simulation->vehicles);
@@ -365,7 +364,7 @@ int main(int argc, char* argv[]) {
     global_simulation->spawn_active = 1;
     global_simulation->total_parked_vehicles = 0;
     
-    /* BUG #3: Initialize mutex for protecting total_parked_vehicles */
+    /* Initialize mutex for protecting total_parked_vehicles */
     pthread_mutex_init(&global_simulation->parked_count_lock, NULL);
     
     global_simulation->vehicles = (vehicle_t**)malloc(MAX_VEHICLES * sizeof(vehicle_t*));
@@ -401,8 +400,6 @@ int main(int argc, char* argv[]) {
     global_simulation->f10_controller_pid = fork();
     if (global_simulation->f10_controller_pid == 0) {
         /* Child process: F10 controller */
-        /* ISSUE #2: Close unused pipe ends in child process */
-        /* F10 reads from pipe_f11_to_f10[0], writes to pipe_f10_to_f11[1] */
         close(global_simulation->ipc_pipes->pipe_f10_to_f11[0]);  /* Don't read own pipe */
         close(global_simulation->ipc_pipes->pipe_f11_to_f10[1]);  /* Don't write to other's pipe */
         
@@ -420,8 +417,6 @@ int main(int argc, char* argv[]) {
     global_simulation->f11_controller_pid = fork();
     if (global_simulation->f11_controller_pid == 0) {
         /* Child process: F11 controller */
-        /* ISSUE #2: Close unused pipe ends in child process */
-        /* F11 reads from pipe_f10_to_f11[0], writes to pipe_f11_to_f10[1] */
         close(global_simulation->ipc_pipes->pipe_f11_to_f10[0]);  /* Don't read own pipe */
         close(global_simulation->ipc_pipes->pipe_f10_to_f11[1]);  /* Don't write to other's pipe */
         
@@ -433,9 +428,6 @@ int main(int argc, char* argv[]) {
         shutdown_simulation();
         return 1;
     }
-    
-    /* NOTE: Parent keeps pipe ends open so vehicle threads can send emergency alerts */
-    /* Kernel will clean up pipes when all processes exit */
 
     /* Print startup messages */
     print_banner();

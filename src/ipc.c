@@ -121,12 +121,12 @@ int ipc_send_emergency_alert(pipe_pair_t* pipes, int source, vehicle_t* vehicle)
     msg.source_intersection = source;
     msg.vehicle_id = vehicle->id;
     msg.priority = vehicle->priority;
-    msg.data = 0;  /* ISSUE #1: Correct dot notation (already correct) */
+    msg.data = 0;  /* Correct dot notation (already correct) */
     
     strncpy(msg.vehicle_type, vehicle->type, sizeof(msg.vehicle_type) - 1);
     msg.vehicle_type[sizeof(msg.vehicle_type) - 1] = '\0';
 
-    /* ISSUE #3: Retry loop for EAGAIN/EWOULDBLOCK to prevent message loss */
+    /* Retry loop for EAGAIN/EWOULDBLOCK to prevent message loss */
     int* write_fd = (source == 0) ? pipes->pipe_f10_to_f11 : pipes->pipe_f11_to_f10;
     int max_retries = 3;
     

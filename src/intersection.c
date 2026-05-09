@@ -90,7 +90,7 @@ void intersection_set_emergency_mode(intersection_t* intersection, int enable) {
     intersection->emergency_vehicle_present = enable;
     
     if (enable) {
-        /* BUG #1: Set only north+south GREEN and east+west RED for safer path */
+        /* Set only north+south GREEN and east+west RED for safer path */
         intersection->north_light.state = LIGHT_GREEN;
         intersection->south_light.state = LIGHT_GREEN;
         intersection->east_light.state = LIGHT_RED;
@@ -136,7 +136,7 @@ void intersection_update_lights(intersection_t* intersection) {
     
     time_t now = time(NULL);
     
-    /* BUG #3: Use configurable green_duration instead of hardcoded 5 seconds */
+    /* Use configurable green_duration instead of hardcoded 5 seconds */
     int cycle_seconds = intersection->green_duration / 1000;
     if ((now - intersection->north_light.last_change) >= cycle_seconds) {
         

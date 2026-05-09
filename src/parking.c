@@ -1,6 +1,6 @@
 #include "parking.h"
 #include "display.h"
-#include "simulation.h" /* For global_shutdown_flag */
+#include "simulation.h" 
 #include <stdlib.h>
 #include <stdio.h>
 #include <pthread.h>
@@ -65,7 +65,6 @@ int parking_wait_spot(parking_lot_t* lot) {
         
         struct timespec ts;
         clock_gettime(CLOCK_REALTIME, &ts);
-        /* ISSUE #1: Using correct dot notation for timespec members */
         ts.tv_nsec += 100000000;  /* 100ms per try */
         if (ts.tv_nsec >= 1000000000) {
             ts.tv_sec += 1;
@@ -86,7 +85,6 @@ int parking_wait_spot(parking_lot_t* lot) {
         if (errno != ETIMEDOUT) return -1;
     }
     
-    /* ISSUE #3: Distinct message when timeout occurs */
     fprintf(stderr, "[PARKING] Spot TIMEOUT after 500ms - no spots available\n");
     fflush(stderr);
     return -1;  /* Gave up after 500ms total */
@@ -101,7 +99,6 @@ int parking_try_enter_queue(parking_lot_t* lot) {
     
     int result = sem_trywait(&lot->waiting_queue);
     
-    /* ISSUE #3: Distinct message when queue is full */
     if (result == -1) {
         fprintf(stderr, "[PARKING] Queue FULL - cannot enter waiting queue\n");
         fflush(stderr);
@@ -124,7 +121,6 @@ void parking_leave_queue(parking_lot_t* lot) {
 void parking_leave_spot(parking_lot_t* lot) {
     if (!lot) return;
     
-    /* ISSUE #2: Release spot BEFORE decrementing occupancy */
     /* This keeps occupancy accurate (reflects currently occupied spots) */
     sem_post(&lot->parking_spots);
     

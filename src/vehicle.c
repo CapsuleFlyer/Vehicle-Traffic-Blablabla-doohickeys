@@ -344,8 +344,8 @@ void* vehicle_thread_func(void* arg) {
     /* ===== CROSSING SECTION - WAIT UNTIL CAN CROSS ===== */
     vehicle->current_state = CROSSING;
     
-    /* BUG #2: Use intersection_can_cross() API instead of inline logic */
-    /* This enforces the max-2-concurrent-vehicles constraint properly */
+    /* Use intersection_can_cross() API instead of inline logic
+     This enforces the max-2-concurrent-vehicles constraint properly */
     int wait_iters = 0;
     while (!global_shutdown_flag && wait_iters < 50) {  /* Max 50 iterations * 100ms = 5 seconds */
         if (intersection_can_cross(intersection, is_emergency)) {
