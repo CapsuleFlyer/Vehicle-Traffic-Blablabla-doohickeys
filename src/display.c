@@ -13,7 +13,6 @@
 #include <semaphore.h>
 
 
-/* Event log storage - circular buffer */
 #define EVENT_LOG_SIZE 100
 typedef struct {
     char messages[EVENT_LOG_SIZE][256];
@@ -34,12 +33,10 @@ void display_shutdown(void) {
 }
 
 void display_clear_screen(void) {
-    /* \033[2J clears entire screen, \033[H moves cursor to home */
     printf("\033[2J\033[H");
     fflush(stdout);
 }
 
-/* Add event to circular log */
 static void add_event(const char* message) {
     if (!message) return;
     
@@ -58,9 +55,7 @@ static void add_event(const char* message) {
     pthread_mutex_unlock(&log_lock);
 }
 
-/* Print aligned dashboard*/
 void display_draw_live_dashboard(intersection_t* f10, intersection_t* f11) {
-    /* Simplified display - removed visual blocks, keeping logic intact */
     (void)f10;
     (void)f11;
 }
@@ -79,11 +74,9 @@ void display_draw_parking_lot(int row, int col, int occupancy, int max_spots) {
     (void)max_spots;
 }
 
-/* Print ASCII intersection map with parking */
 void display_draw_intersections(intersection_t* f10, intersection_t* f11) {
     (void)f10;
     (void)f11;
-    /* Removed visual rendering - logic in background */
 }
 
 void display_print_vehicle_log(int row, const char* message, const char* color) {
@@ -104,8 +97,6 @@ void display_print_vehicle_table(int row, vehicle_t** vehicles, int vehicle_coun
     (void)row;
     (void)vehicles;
     (void)vehicle_count;
-    
-    /* Removed visual table - logging via stderr only */
 }
 
 void display_update_live_ui(intersection_t* f10, intersection_t* f11, 
@@ -128,10 +119,6 @@ void display_print_shutdown_summary(int total_vehicles, int total_parked) {
     fflush(stdout);
 }
 
-/* Helper function to convert vehicle state to string - already defined in vehicle.c */
-/* extern const char* get_state_string(vehicle_state_t state); */
-
-/* Get vehicle color based on type */
 const char* get_vehicle_color(const char* vehicle_type) {
     if (!vehicle_type) return RESET;
     
@@ -145,7 +132,6 @@ const char* get_vehicle_color(const char* vehicle_type) {
     return RESET;
 }
 
-/* Print banner */
 void print_banner(void) {
     printf("\n%s", BOLD CYAN);
     printf("════════════════════════════════════════════════════════════════════════════════\n");
@@ -156,7 +142,6 @@ void print_banner(void) {
     fflush(stdout);
 }
 
-/* Print intersection map */
 void print_intersection_map(void) {
     printf("\n%s", CYAN);
     printf("F10 & F11 Intersection Map:\n");
@@ -169,7 +154,6 @@ void print_intersection_map(void) {
     fflush(stdout);
 }
 
-/* Print vehicle status */
 void print_vehicle_status(time_t arrival_time, const char* vehicle_type, int vehicle_id,
                          const char* origin, const char* destination, 
                          int priority, const char* status) {
@@ -183,7 +167,6 @@ void print_vehicle_status(time_t arrival_time, const char* vehicle_type, int veh
     fflush(stderr);
 }
 
-/* Print emergency alert */
 void print_emergency_alert(const char* vehicle_type, const char* from, const char* to) {
     fprintf(stderr, "\n%s", RED);
     fprintf(stderr, "╔════════════════════════════════════════════════════════════════════════════════╗\n");
@@ -197,11 +180,9 @@ void print_emergency_alert(const char* vehicle_type, const char* from, const cha
     add_event(vehicle_type);
 }
 
-/* Print live dashboard */
 void print_live_dashboard(void) {
 }
 
-/* Print detailed shutdown summary */
 void print_shutdown_summary_detailed(int total_vehicles, int total_parked,
                                     int emergency_count, int bus_count, 
                                     int car_count, int bike_count, int tractor_count,
@@ -231,7 +212,6 @@ void print_shutdown_summary_detailed(int total_vehicles, int total_parked,
     fflush(stdout);
 }
 
-/* Print final shutdown message */
 void print_shutdown(void) {
     printf("\n%s", BOLD CYAN);
     printf("╔════════════════════════════════════════════════════════════════════════════════╗\n");
@@ -242,10 +222,6 @@ void print_shutdown(void) {
     fflush(stdout);
 }
 
-/*
- * Print comprehensive final board with all simulation statistics
- * Receives pre-counted sector breakdown and semaphore values from shutdown_simulation()
- */
 void print_final_board(int f10_ambulance, int f10_firetruck, int f10_bus, int f10_car, int f10_bike, int f10_tractor,
                      int f11_ambulance, int f11_firetruck, int f11_bus, int f11_car, int f11_bike, int f11_tractor,
                      int f10_spots, int f10_queue, int f11_spots, int f11_queue) {
@@ -256,18 +232,15 @@ void print_final_board(int f10_ambulance, int f10_firetruck, int f10_bus, int f1
     printf("║                        SIMULATION FINAL BOARD REPORT                          ║\n");
     printf("╚═══════════════════════════════════════════════════════════════════════════════╝\n");
 
-    /* SECTION 1: TOTAL VEHICLES */
     printf("\n%s", CYAN);
     printf("┌─ TOTAL VEHICLES ─────────────────────────────────────────────────────────────┐\n");
     printf("│ %s%d%s vehicles processed during simulation%54s│\n", 
            GREEN, MAX_VEHICLES, RESET CYAN, "");
     printf("└──────────────────────────────────────────────────────────────────────────────┘\n");
 
-    /* SECTION 2: PARKING SUMMARY */
     printf("\n%s", CYAN);
     printf("┌─ PARKING SUMMARY ────────────────────────────────────────────────────────────┐\n");
 
-    /* F10 Parking */
     int f10_occupancy = (global_simulation->f10_intersection && global_simulation->f10_intersection->parking_lot) 
         ? parking_get_occupancy(global_simulation->f10_intersection->parking_lot) : 0;
     int f10_total = (global_simulation->f10_intersection && global_simulation->f10_intersection->parking_lot)
@@ -276,7 +249,6 @@ void print_final_board(int f10_ambulance, int f10_firetruck, int f10_bus, int f1
     for (int i = 0; i < 10; i++) printf("%s", (i < f10_occupancy) ? "█" : "░");
     printf("%s] Total ever parked: %s%d%s%30s│\n", CYAN, GREEN, f10_total, RESET CYAN, "");
 
-    /* F11 Parking */
     int f11_occupancy = (global_simulation->f11_intersection && global_simulation->f11_intersection->parking_lot)
         ? parking_get_occupancy(global_simulation->f11_intersection->parking_lot) : 0;
     int f11_total = (global_simulation->f11_intersection && global_simulation->f11_intersection->parking_lot)
@@ -288,7 +260,6 @@ void print_final_board(int f10_ambulance, int f10_firetruck, int f10_bus, int f1
     printf("│ Combined Total Parked: %s%d%s%51s│\n", GREEN, global_simulation->total_parked_vehicles, RESET CYAN, "");
     printf("└──────────────────────────────────────────────────────────────────────────────┘\n");
 
-    /* SECTION 3: SECTOR BREAKDOWN - uses pre-counted parameters */
     printf("\n%s", CYAN);
     printf("┌─ SECTOR BREAKDOWN ───────────────────────────────────────────────────────────┐\n");
 
@@ -305,7 +276,6 @@ void print_final_board(int f10_ambulance, int f10_firetruck, int f10_bus, int f1
            GREEN, f11_car, RESET CYAN, GREEN, f11_bike, RESET CYAN, GREEN, f11_tractor, RESET CYAN, "");
     printf("└──────────────────────────────────────────────────────────────────────────────┘\n");
 
-    /* SECTION 4: SEMAPHORE STATUS - uses pre-captured values from shutdown_simulation() */
     printf("\n%s", CYAN);
     printf("┌─ SEMAPHORE STATUS ───────────────────────────────────────────────────────────┐\n");
     printf("│ F10: Available Spots: %s%d%s | Queue Slots: %s%d%s%43s│\n",
@@ -314,13 +284,11 @@ void print_final_board(int f10_ambulance, int f10_firetruck, int f10_bus, int f1
            GREEN, f11_spots, RESET CYAN, GREEN, f11_queue, RESET CYAN, "");
     printf("└──────────────────────────────────────────────────────────────────────────────┘\n");
 
-    /* SECTION 5: THREAD STATUS */
     printf("\n%s", CYAN);
     printf("┌─ THREAD STATUS ──────────────────────────────────────────────────────────────┐\n");
     printf("│ All %s15%s vehicle threads joined successfully%45s│\n", GREEN, RESET CYAN, "");
     printf("└──────────────────────────────────────────────────────────────────────────────┘\n");
 
-    /* SECTION 6: IPC PIPES */
     printf("\n%s", CYAN);
     printf("┌─ IPC PIPES ──────────────────────────────────────────────────────────────────┐\n");
     printf("│ Pipe F10→F11: %sclosed%s%57s│\n", GREEN, RESET CYAN, "");
@@ -330,4 +298,3 @@ void print_final_board(int f10_ambulance, int f10_firetruck, int f10_bus, int f1
 
     fflush(stdout);
 }
-

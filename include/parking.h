@@ -7,7 +7,6 @@
 #define MAX_PARKING_SPOTS 10
 #define MAX_WAITING_QUEUE 5
 
-/* Parking lot structure */
 typedef struct {
     sem_t parking_spots;
     sem_t waiting_queue;
@@ -17,7 +16,6 @@ typedef struct {
     pthread_mutex_t lock;
 } parking_lot_t;
 
-/* Function prototypes */
 parking_lot_t* parking_create(void);
 void parking_destroy(parking_lot_t* lot);
 int parking_wait_spot(parking_lot_t* lot);
@@ -28,4 +26,4 @@ int parking_get_occupancy(parking_lot_t* lot);
 int parking_get_total_parked(parking_lot_t* lot);
 int parking_get_peak(parking_lot_t* lot);
 
-#endif /* PARKING_H */
+#endif

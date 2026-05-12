@@ -8,9 +8,6 @@
 #include <errno.h>
 #include <semaphore.h>
 
-/*
- * Create and initialize a parking lot with semaphores
- */
 parking_lot_t* parking_create(void) {
     parking_lot_t* lot = (parking_lot_t*)malloc(sizeof(parking_lot_t));
     if (!lot) {
@@ -18,7 +15,6 @@ parking_lot_t* parking_create(void) {
         return NULL;
     }
 
-    /* Initialize semaphores */
     if (sem_init(&lot->parking_spots, 0, MAX_PARKING_SPOTS) == -1) {
         perror("sem_init parking_spots");
         free(lot);
@@ -40,9 +36,6 @@ parking_lot_t* parking_create(void) {
     return lot;
 }
 
-/*
- * Destroy parking lot and cleanup semaphores
- */
 void parking_destroy(parking_lot_t* lot) {
     if (!lot) return;
 
@@ -52,20 +45,15 @@ void parking_destroy(parking_lot_t* lot) {
     free(lot);
 }
 
-/*
- * Wait for a parking spot with timeout and atomic occupancy increment
- * Returns 0 on success, -1 on error or timeout
- */
 int parking_wait_spot(parking_lot_t* lot) {
     if (!lot || global_shutdown_flag) return -1;
     
-    /* Use short repeated tries instead of one long block */
     for (int tries = 0; tries < 5; tries++) {
         if (global_shutdown_flag) return -1;
         
         struct timespec ts;
         clock_gettime(CLOCK_REALTIME, &ts);
-        ts.tv_nsec += 100000000;  /* 100ms per try */
+        ts.tv_nsec += 100000000;
         if (ts.tv_nsec >= 1000000000) {
             ts.tv_sec += 1;
             ts.tv_nsec -= 1000000000;
@@ -81,19 +69,14 @@ int parking_wait_spot(parking_lot_t* lot) {
             pthread_mutex_unlock(&lot->lock);
             return 0;
         }
-        /* ETIMEDOUT = try again. Other error = fail */
         if (errno != ETIMEDOUT) return -1;
     }
     
     fprintf(stderr, "[PARKING] Spot TIMEOUT after 500ms - no spots available\n");
     fflush(stderr);
-    return -1;  /* Gave up after 500ms total */
+    return -1;
 }
 
-/*
- * Try to enter the waiting queue
- * Returns 0 on success, -1 if queue is full or shutdown active
- */
 int parking_try_enter_queue(parking_lot_t* lot) {
     if (!lot || global_shutdown_flag) return -1;
     
@@ -107,21 +90,14 @@ int parking_try_enter_queue(parking_lot_t* lot) {
     return result;
 }
 
-/*
- * Leave the waiting queue (increment semaphore)
- */
 void parking_leave_queue(parking_lot_t* lot) {
     if (!lot) return;
     sem_post(&lot->waiting_queue);
 }
 
-/*
- * Leave a parking spot (increment semaphore)
- */
 void parking_leave_spot(parking_lot_t* lot) {
     if (!lot) return;
     
-    /* This keeps occupancy accurate (reflects currently occupied spots) */
     sem_post(&lot->parking_spots);
     
     pthread_mutex_lock(&lot->lock);
@@ -131,9 +107,6 @@ void parking_leave_spot(parking_lot_t* lot) {
     pthread_mutex_unlock(&lot->lock);
 }
 
-/*
- * Get current parking occupancy
- */
 int parking_get_occupancy(parking_lot_t* lot) {
     if (!lot) return 0;
     
@@ -144,9 +117,6 @@ int parking_get_occupancy(parking_lot_t* lot) {
     return occupancy;
 }
 
-/*
- * Get peak occupancy ever reached
- */
 int parking_get_peak(parking_lot_t* lot) {
     if (!lot) return 0;
     pthread_mutex_lock(&lot->lock);
@@ -155,9 +125,6 @@ int parking_get_peak(parking_lot_t* lot) {
     return peak;
 }
 
-/*
- * Get total vehicles ever parked at this lot
- */
 int parking_get_total_parked(parking_lot_t* lot) {
     if (!lot) return 0;
     

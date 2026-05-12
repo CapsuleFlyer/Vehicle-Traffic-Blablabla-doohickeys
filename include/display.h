@@ -4,7 +4,6 @@
 #include <time.h>
 #include "simulation.h"
 
-/* ===== ANSI COLOR CODES ===== */
 #define RESET       "\033[0m"
 #define BOLD        "\033[1m"
 #define RED         "\033[31m"
@@ -19,7 +18,6 @@
 #define BG_YELLOW   "\033[43m"
 #define BG_BLUE     "\033[44m"
 
-/* Legacy aliases for backward compatibility */
 #define COLOR_RED     RED
 #define COLOR_GREEN   GREEN
 #define COLOR_YELLOW  YELLOW
@@ -28,12 +26,10 @@
 #define COLOR_WHITE   WHITE
 #define COLOR_RESET   RESET
 
-/* ===== EVENT LOGGING FUNCTIONS ===== */
 void display_init(void);
 void display_print_vehicle_log(int row, const char* message, const char* color);
 void display_shutdown(void);
 
-/* ===== VISUAL DISPLAY FUNCTIONS ===== */
 void print_banner(void);
 void print_intersection_map(void);
 const char* get_vehicle_color(const char* vehicle_type);
@@ -51,4 +47,4 @@ void print_final_board(int f10_ambulance, int f10_firetruck, int f10_bus, int f1
                        int f10_spots, int f10_queue, int f11_spots, int f11_queue);
 void print_shutdown(void);
 
-#endif 
+#endif

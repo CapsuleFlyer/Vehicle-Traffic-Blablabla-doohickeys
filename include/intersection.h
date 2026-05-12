@@ -10,15 +10,13 @@
 #define LIGHT_RED 0
 #define LIGHT_GREEN 1
 
-/* Traffic light struct */
 typedef struct {
-    int state;  /* RED or GREEN */
+    int state;
     time_t last_change;
 } traffic_light_t;
 
-/* Intersection structure */
 typedef struct {
-    int id;                         /* 0 for F10, 1 for F11 */
+    int id;
     pthread_mutex_t intersection_lock;
     traffic_light_t north_light;
     traffic_light_t south_light;
@@ -27,11 +25,10 @@ typedef struct {
     parking_lot_t* parking_lot;
     int emergency_vehicle_present;
     int vehicles_crossing;
-    int cycle_duration;             /* in milliseconds */
-    int green_duration;             /* in milliseconds */
+    int cycle_duration;
+    int green_duration;
 } intersection_t;
 
-/* Function prototypes */
 intersection_t* intersection_create(int id, int cycle_duration, int green_duration);
 void intersection_destroy(intersection_t* intersection);
 void intersection_lock(intersection_t* intersection);

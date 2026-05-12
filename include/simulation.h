@@ -9,7 +9,6 @@
 #include "vehicle.h"
 #include "ipc.h"
 
-/* Global simulation state */
 typedef struct {
     intersection_t* f10_intersection;
     intersection_t* f11_intersection;
@@ -27,7 +26,6 @@ typedef struct {
 extern simulation_t* global_simulation;
 extern volatile int global_shutdown_flag;
 
-/* Function prototypes */
 void signal_handler(int sig);
 void shutdown_simulation(void);
 void setup_signal_handlers(void);
